@@ -11,6 +11,6 @@ import { Component } from '@angular/core';
 })
 
 export class AppComponent {
-    appName = "Spring Music";
+    appName = "Periodic Elements Demo";
 
 }
