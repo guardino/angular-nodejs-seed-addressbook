@@ -1,13 +1,13 @@
 ---
 applications:
-- name: material-database-uaa
+- name: periodic-elements-demo
   memory: 128M
   buildpack: https://github.com/cloudfoundry/nodejs-buildpack.git#cc2e735
   command:  node ./bin/www
 services:
-   - uaa
+    - periodic-elements-demo-uaa
 env:
     node_env: cloud
     uaa_service_label : predix-uaa
-    clientId: foo
-    clientSecret: foo
+    clientId: elements
+    clientSecret: mendeleev
