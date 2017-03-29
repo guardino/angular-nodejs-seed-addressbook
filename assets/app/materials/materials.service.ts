@@ -2,6 +2,7 @@ import { Http, RequestOptions } from '@angular/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { AuthService } from '../auth/auth.service';
+import { MaterialsEventService } from './materials.event.service';
 import 'rxjs';
 
 @Injectable()
@@ -9,18 +10,20 @@ export class MaterialService{
 
     private baseUrl = process.env.baseUrl;
 
-    constructor(private _http: Http, private _authService: AuthService){
+    constructor(
+        private _http: Http, 
+        private _authService: AuthService,
+        private _materialsEventService: MaterialsEventService
+    ){
         this.getColumns();
     }
 
     private _data = [];
     private _columns = [];
-    private _search = [];
     private _dataView = [];
 
     data = new BehaviorSubject<Array<Object>>(this._data);
     columns = new BehaviorSubject<Array<Object>>(this._columns);
-    search = new BehaviorSubject<Array<Object>>(this._search);
     dataView = new BehaviorSubject<Array<Object>>(this._dataView);
 
     getAllData(){
@@ -29,24 +32,19 @@ export class MaterialService{
                 .map(res => res.json());
     }
 
-    clearSearchData() {
-        this._search = [];
-        this.search.next(this._search);
-    }
 
     getDataByName(name){
-        this.clearSearchData();
+        this._materialsEventService.clearSearchData();
         let authParam = this._authService.authParamUrl();
         this._http.get(this.baseUrl + '/material' + authParam + '&query=' + name)
                     .map(res => res.json())
                     .distinctUntilChanged()
                     .subscribe(data => {
                         if(name == "" || name === null || typeof name === 'undefined') {
-                            this._search = [];
+                            this._materialsEventService.search.next([]);
                         } else {
-                            this._search = data;
+                            this._materialsEventService.search.next(data);
                         }
-                        this.search.next(this._search);
                     });
     }
 
@@ -64,11 +62,22 @@ export class MaterialService{
                     });
     }
 
-    uploadFile(file): void {
+    appendCsv(file): void {
         let authParam = this._authService.authParamUrl();
         let formData:FormData = new FormData();
         formData.append('file', file, file.name);
-        this._http.post(this.baseUrl + "/uploadFile" + authParam, formData)
+        this._http.post(this.baseUrl + "/appendcsv" + authParam, formData)
+            .subscribe(data => console.log(data));
+        // update columns and data view.
+        this.getColumns();
+        this.updateDataView();
+    }
+
+    importCsv(file): void {
+        let authParam = this._authService.authParamUrl();
+        let formData:FormData = new FormData();
+        formData.append('file', file, file.name);
+        this._http.post(this.baseUrl + "/importcsv" + authParam, formData)
             .subscribe(data => console.log(data));
         // update columns and data view.
         this.getColumns();
@@ -159,5 +168,30 @@ export class MaterialService{
                 return i;
             }
         }
+    }
+
+    // convert Json to CSV data in Angular2
+    JsonToCSV(json) {
+        let array = typeof json != 'object' ? JSON.parse(json) : json;
+        let str : string = '';
+        let row : string = "";
+
+        for (let index in json[0]) {
+            //Now convert each value to string and comma-separated
+            row += index + ',';
+        }
+        row = row.slice(0, -1);
+        //append Label row with line break
+        str += row + '\r\n';
+
+        for (let i = 0; i < array.length; i++) {
+            let line = '';
+            for (let index in array[i]) {
+                if (line != '') { line += ','; } 
+                line += array[i][index];
+            }
+            str += line + '\r\n';
+        }
+        return str;
     }
 }

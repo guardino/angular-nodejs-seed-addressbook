@@ -29,7 +29,7 @@ import { MaterialsEventService } from '../materials.event.service';
                 transform: 'translateX(0)',
                 padding: '20px',
                 'flex-grow': '1',
-                'min-width': '440px',
+                'min-width': '620px',
                 color: 'aliceblue'
             })),
             transition('void => active', [style({opacity: '0', transform:'translateX(-50%)'}),animate(200)]),
@@ -54,9 +54,8 @@ export class ToolBoxComponent implements OnInit {
     }
 
     onClick(option: String) : void {
-        if(this.index.getValue() == 'search') {
-            // TODO: since the onBlur() method triggered first.
-        } else if(this.index.getValue() == option) {
+        this._materialEventService.clearSearchData();
+        if(this.index.getValue() == option) {
             this.index.next('');
         } else {
             this.index.next(option);

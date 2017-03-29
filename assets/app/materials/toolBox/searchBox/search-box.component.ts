@@ -2,6 +2,7 @@ import { Component, Output, EventEmitter, ViewChild, ElementRef, OnInit, AfterVi
 import { Observable } from 'rxjs/Rx';
 
 import { MaterialService } from '../../materials.service';
+import { MaterialsEventService } from '../../materials.event.service';
 
 @Component({
     selector: 'my-search-box',
@@ -31,12 +32,13 @@ export class SearchBoxComponent implements OnInit, AfterViewInit {
     targetSearch: String = "";
     
     constructor(
-        private _materialService: MaterialService
+        private _materialService: MaterialService,
+        private _materialsEventService: MaterialsEventService
     ){ }
 
     ngOnInit(){
         this._materialService.data
-                        .subscribe(() => this._materialService.clearSearchData());
+                        .subscribe(() => this._materialsEventService.clearSearchData());
         
         // get data through keyup event.
         let keyups = Observable.fromEvent(this.search.nativeElement, "keyup")
@@ -63,9 +65,9 @@ export class SearchBoxComponent implements OnInit, AfterViewInit {
     }
 
     onBlur() : void {
-        if(this.targetSearch == "") {
-            this.useless.emit({clicked: true});
-        }
+        // if(this.targetSearch == "") {
+        //     this.useless.emit({clicked: true});
+        // }
     }
 
 }

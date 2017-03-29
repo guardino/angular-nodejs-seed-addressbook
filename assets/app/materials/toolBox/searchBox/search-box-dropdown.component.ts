@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { MaterialService } from '../../materials.service';
+import { MaterialsEventService } from '../../materials.event.service';
 
 @Component({
     selector: 'my-search-box-dropdown',
@@ -18,10 +18,10 @@ export class SearchBoxDropdownComponent implements OnInit {
     data;
     @Input() target;
 
-    constructor(private _materialService: MaterialService){ }
+    constructor(private _materialEventService: MaterialsEventService){ }
 
     ngOnInit(){
-        this.data = this._materialService.search;
+        this.data = this._materialEventService.search;
     }
 
 }

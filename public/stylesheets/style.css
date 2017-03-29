@@ -43,8 +43,13 @@ input.ng-invalid.ng-touched {
 /*
 * clear random gaps between rows in searchbox list;
 */
-.my-search-list {
+.my-search-list, .my-search-group {
   min-height: 0px !important;
+}
+my-search-box-dropdown-item:hover {
+  padding-left: 3px;
+  padding-right: 3px;
+  opacity: 0.9;
 }
 .my-search-list-item {
   border-top: 0 !important;

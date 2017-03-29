@@ -2,7 +2,9 @@
   <!--<button class="navbar-toggler navbar-toggler-right" type="button" data-toggle="collapse" data-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">-->
     <!--<span class="navbar-toggler-icon"></span>-->
   <!--</button>-->
-  <a class="navbar-brand" href="#">Badge</a>
+  <a class="navbar-brand" href="#">
+    <img src="http://www.icons101.com/icon_png/size_128/id_76714/Atom.png" alt="badge" style="width:60px;height:60px;">
+  </a>
   <div class="collapse navbar-collapse" id="navbarText">
     <ul class="navbar-nav mr-auto"> <!-- left -->
       <li class="nav-item active" style="margin: 0; padding: 0;" >
@@ -14,7 +16,7 @@
     <ul class="navbar-nav mx-auto"><!-- mid -->
     </ul>
     <ul class="navbar-nav ml-auto"><!-- right -->
-      <li class="nav-item" style="padding-top: 10px;"><a style="color: aliceblue;">{{ user?.value?.name }}</a></li>
+      <li class="nav-item" style="padding-top: 10px;"><a style="color: aliceblue; cursor: ">{{ user?.value?.user_name }}</a></li>
       <li class="nav-item dropdown">
         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
           <i class="fa fa-user" aria-hidden="true"></i>

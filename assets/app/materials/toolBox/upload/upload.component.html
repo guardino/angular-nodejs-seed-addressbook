@@ -1,12 +1,24 @@
- <label for="file" class="custom-file">
-     <div>
-        <h6 style="cursor: pointer; border: 1px solid ghostwhite; border-radius: 5px; padding: 10px;">Import File</h6>
-     </div>
-     <input #myInput class="custom-file-input" id="file" type="file" (change)="onFileChange($event)" hidden>
- </label>
+<label for="import-file" class="custom-file">
+    <div>
+    <h6 style="cursor: pointer; border: 1px solid ghostwhite; border-radius: 5px; padding: 10px;">Import CSV</h6>
+    </div>
+    <input #myImport class="custom-file-input" id="import-file" type="file" (change)="onFileChange($event)" hidden>
+</label>
 
-<div *ngIf="title != ''">
-    <br><small>&nbsp;&nbsp;&nbsp;You will upload: &nbsp;&nbsp;&nbsp;</small>{{ title }}
+<label for="export-file" class="custom-file">
+    <div>
+    <h6 style="cursor: pointer; border: 1px solid ghostwhite; border-radius: 5px; padding: 10px;">Export CSV</h6>
+    </div>
+    <input class="custom-file-input" id="export-file" type="button" (click)="onExport()" hidden>
+</label>
+
+<div *ngIf="dataName != ''">
+    <div class="alert alert-danger" role="alert" *ngIf="!uploaded">
+        {{ dangerAlert }}
+    </div>
+    <div class="alert alert-info" role="alert" *ngIf="fileIsValid && !uploaded">
+        &nbsp;&nbsp;&nbsp;You will import: &nbsp;&nbsp;&nbsp;<small>{{ dataName }}</small>
+    </div>
     <div class="alert alert-danger" role="alert" *ngIf="!fileIsValid && !uploaded">
         {{ errorMessage }}
     </div>
@@ -14,6 +26,4 @@
     <button *ngIf="fileIsValid" type="button" class="btn btn-primary" (click)="onConfirm()">Confirm</button>
 </div>
 
-<div class="alert alert-success" role="alert" *ngIf="uploaded">
- "Uploading finished."
-</div>
+<div class="alert alert-success" role="alert" *ngIf="uploaded">"Uploading finished."</div>

@@ -7,7 +7,6 @@ import { AuthService } from './auth.service';
     selector: 'my-login',
     template: `
         <div class="container">
-            <button type="button" class="btn btn-outline-primary btn-lg btn-block" (click)="onPredixClick()">Login as predix user</button>
             <button type="button" class="btn btn-outline-primary btn-lg btn-block" (click)="onGeSsoClick()">Login via GE SSO</button>
         </div>
     `
@@ -20,10 +19,6 @@ export class LoginComponent {
     ) {}
 
     onGeSsoClick() {
-        this._authService.clearCookiesAndStorage();
-    }
-
-    onPredixClick() {
         this._authService.clearCookiesAndStorage();
         this._authService.login();
     }
