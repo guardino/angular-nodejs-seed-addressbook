@@ -88,7 +88,15 @@ export class MaterialService{
         // TODO: grab this from the server backend.
         this.columns.subscribe(res => {
             for(let i=0; i<res.length; i++) {
-                this._dataView.push({key: res[i] , value: true});
+                let exists: boolean = false;
+                for(let j=0; j<this._dataView.length; j++) {
+                    if(this._dataView[j].key.trim().toLowerCase() == res[i].toString().trim().toLowerCase()) {
+                        exists = true;
+                    }
+                }
+                if(!exists) {
+                    this._dataView.push({key: res[i] , value: true});
+                }
             }
             this.dataView.next(this._dataView);
         });
