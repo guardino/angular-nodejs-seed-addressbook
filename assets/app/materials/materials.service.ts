@@ -129,12 +129,11 @@ export class MaterialService{
 
     deleteMaterial(id) {
         let authParam = this._authService.authParamUrl();
-        this._http.delete(this.baseUrl + "/material/"+id + authParam)
-                    .subscribe( confirmation =>
+        this._http.delete(this.baseUrl + "/material/" + id + authParam)
+                    .subscribe(confirmation =>
                         console.log(confirmation)
                     );
     }
-
 
     addData(obj) {
         if(!this.checkDataExists(obj.id)) {
@@ -178,15 +177,17 @@ export class MaterialService{
         }
     }
 
-    // convert Json to CSV data in Angular2
+    // convert Json to CSV data in Angular2, removes 'id' field
     JsonToCSV(json) {
         let array = typeof json != 'object' ? JSON.parse(json) : json;
         let str : string = '';
-        let row : string = "";
+        let row : string = '';
 
         for (let index in json[0]) {
-            //Now convert each value to string and comma-separated
-            row += index + ',';
+            if(index != 'id') {
+                //Now convert each value to string and comma-separated
+                row += index + ',';
+            }
         }
         row = row.slice(0, -1);
         //append Label row with line break
@@ -195,8 +196,10 @@ export class MaterialService{
         for (let i = 0; i < array.length; i++) {
             let line = '';
             for (let index in array[i]) {
-                if (line != '') { line += ','; } 
-                line += array[i][index];
+                if(index != 'id') {
+                    if (line != '') { line += ','; } 
+                    line += array[i][index];
+                }
             }
             str += line + '\r\n';
         }
