@@ -14,14 +14,11 @@ import { ModalComponent } from '../../common/modal.component';
 
 export class CardComponent implements OnInit{
     @Input('data') item;
-    checked = false;
+
+    @Output('edit') edit = new EventEmitter();
+    @Output('delete') delete = new EventEmitter();
+
     scope :BehaviorSubject<string[]>;
-
-    @ViewChild('cmodal') cmodal : ModalComponent;
-    @ViewChild('dmodal') dmodal : ModalComponent;
-
-    briefing = "You will delete this card from your library.";
-    checkbox = "Delete from database. (Careful)";
 
     constructor(
         private _materialService: MaterialService,
@@ -33,27 +30,14 @@ export class CardComponent implements OnInit{
     }
 
     onEdit() {
-        this.dmodal.showConfirmationModal();
-    }
-
-    onDelete() {
-        let data = new JsonObjectPipe().transform(this.item)
-        if(this.checked == true) {
-            this._materialService.deleteMaterial(data.id);
-        }
-        this._materialService.deleteData(data);
-        this.cmodal.hideConfirmationModal();
-    }
-
-    onSave(e){
-        this._materialService.updateMaterial(e.data);
+        this.edit.emit({
+            data: this.item
+        });
     }
 
     deleteConfirmation() {
-        this.cmodal.showConfirmationModal();
-    }
-
-    onCheck(){
-        this.checked = !this.checked;
+        this.delete.emit({
+            data: this.item
+        });
     }
 }

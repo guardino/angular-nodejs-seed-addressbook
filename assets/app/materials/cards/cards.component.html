@@ -1,5 +1,5 @@
 <div [dragula]='"nested-bag"' class="row">
-        <div  *ngIf="newData.length>0"style="padding: 10px; min-width: 400px;">
+        <div *ngIf="newData.length>0"style="padding: 10px; min-width: 400px;">
                 <div class="card" [@addData]="state" >
                         <div class="card-body">
                                 <div class="card-title" style="margin-left: 15px; padding: 10px; display: flex; justify-content: space-between;">
@@ -14,7 +14,34 @@
         <my-card
                 *ngFor="let item of data"
                 style="padding: 10px; min-width: 400px;"
-                [data]="item | keys">
+                [data]="item | keys"
+                (edit)="onEdit($event)"
+                (delete)="deleteConfirmation($event)">
         </my-card>
 </div>
+
+<my-modal style="padding: 10px;" [title]="'Edit'" #dmodal>
+        <my-form-list
+                [data]="editObj | objs"
+                [button]="'Save'"
+                (submit)="onSave($event)"
+        ></my-form-list>
+</my-modal>
+
+<my-modal [title]="'Delete'" #cmodal>
+        <div class="modal-body">
+        <p>{{briefing}}</p>
+        <p *ngIf="(scope | async)?.includes('uaa.admin')">
+                <i
+                class="fa" 
+                [class.fa-check-square-o]="checked"
+                [class.fa-square-o]="!checked"
+                (click)="onCheck()"
+                aria-hidden="true">
+                </i>
+                {{ checkbox }}
+        </p>
+        <button type="button" class="btn btn-primary" (click)="onDelete()">Confirm</button>
+        </div>
+</my-modal>
 

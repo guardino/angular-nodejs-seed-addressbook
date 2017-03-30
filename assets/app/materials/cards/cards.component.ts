@@ -1,10 +1,12 @@
 import {Component, Input, ViewChild, OnInit, state, trigger, style, transition, animate} from '@angular/core';
 import { DragulaService } from 'ng2-dragula';
+import { BehaviorSubject } from 'rxjs';
 
 import { ModalComponent } from '../../common/modal.component';
 import { JsonObjectPipe } from '../../common/json-object.pipe';
 import { MaterialsEventService } from '../materials.event.service';
 import { MaterialService } from '../materials.service';
+import { AuthService } from '../../auth/auth.service';
 
 @Component({
     selector: 'my-cards',
@@ -25,19 +27,30 @@ import { MaterialService } from '../materials.service';
 
 export class CardsComponent implements OnInit{
     @Input() data;
+    editObj = [{}];
+    deleteObj = [{}];
 
-    @ViewChild('modal') modal : ModalComponent;
+    @ViewChild('cmodal') cmodal : ModalComponent;
+    @ViewChild('dmodal') dmodal : ModalComponent;
 
     newData : Array<Object> = [];
     state : string = 'inactive';
 
+    checked = false;
+    briefing = "You will delete this card from your library.";
+    checkbox = "Delete from database. (Careful)";
+
+    scope :BehaviorSubject<string[]>;
+
     constructor(
         private _dragulaService: DragulaService,
         private _materialService: MaterialService,
-        private _materialsEventService: MaterialsEventService
+        private _materialsEventService: MaterialsEventService,
+        private _authService : AuthService
     ) { }
 
     ngOnInit() {
+        this.scope = this._authService.scope;
         this._dragulaService.dropModel.subscribe(value => { });
         this._materialsEventService.data.subscribe(data => {
             this.newData = data;
@@ -50,6 +63,34 @@ export class CardsComponent implements OnInit{
         if(data.length > 0) {
             this.state = 'active';
         }
+    }
+    
+    deleteConfirmation(e) {
+        this.deleteObj = e.data;
+        this.cmodal.showConfirmationModal();
+    }
+    
+    onEdit(e) {
+        this.editObj = e.data;
+        this.dmodal.showConfirmationModal();
+    }
+
+    onDelete() {
+        let data = new JsonObjectPipe().transform(this.deleteObj);
+        if(this.checked == true) {
+            this._materialService.deleteMaterial(data.id);
+        }
+        this._materialService.deleteData(data);
+        this.cmodal.hideConfirmationModal();
+    }
+
+    onCheck(){
+        this.checked = !this.checked;
+    }
+
+    onSave(e){
+        this._materialService.updateMaterial(e.data);
+        this.dmodal.hideConfirmationModal();
     }
 
     onCancel() : void {

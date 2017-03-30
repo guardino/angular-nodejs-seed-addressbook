@@ -4,34 +4,11 @@
         <a (click)="onEdit()" *ngIf="(scope | async)?.includes('uaa.admin')">
           <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
         </a>
-            <my-modal style="padding: 10px;" [title]="'Edit'" #dmodal>
-                  <my-form-list
-                      [data]="item | objs"
-                      [button]="'Save'"
-                      (submit)="onSave($event)"
-                  ></my-form-list>
-            </my-modal>
 
         <!-- Delete Button -->
         <a (click)="deleteConfirmation()">
           <i class="fa fa-times fa-pull-right" aria-hidden="true"></i>
         </a>
-            <my-modal [title]="'Delete'" #cmodal>
-              <div class="modal-body">
-                <p>{{briefing}}</p>
-                <p *ngIf="(scope | async)?.includes('uaa.admin')">
-                    <i
-                        class="fa" 
-                        [class.fa-check-square-o]="checked"
-                        [class.fa-square-o]="!checked"
-                        (click)="onCheck()"
-                        aria-hidden="true">
-                    </i>
-                    {{ checkbox }}
-                </p>
-                <button type="button" class="btn btn-primary" (click)="onDelete()">Confirm</button>
-              </div>
-            </my-modal>
     </div>
 
     <div class="card-body" style="max-height: 65vh; overflow-y: scroll;">
