@@ -18,22 +18,22 @@ export class AuthService {
   private _user : User;
 
   user = new BehaviorSubject<User>(this._user);
-  valid = new BehaviorSubject<boolean>(false);
-  scope = new BehaviorSubject<Array<string>>([]);
+  isAuthenticated = new BehaviorSubject<boolean>(false);
 
   constructor(private _http: Http, private _router: Router) {
     this.checkToken();
   }
 
-  clearCookiesAndStorage() : void {
+  clear() : void {
     localStorage.removeItem('token');
     Cookie.delete('token');
     Cookie.delete('connect.sid');
+    this._user = new User( "", "", "", "", "", [], "", [], "", "", "", "", "", "", "", "", "", "", null );
+    this.user.next(this._user);
   }
 
-  isLoggedIn() : BehaviorSubject<boolean> {
-    this.checkToken();
-    return this.valid;
+  getToken() : string {
+    return localStorage.getItem('token');
   }
 
   login() : void {
@@ -41,53 +41,16 @@ export class AuthService {
   }
 
   logout() : void {
-    this.clearCookiesAndStorage();
-    this._user = new User( "", "", "", "", "", "", "" );
-    this.user.next(this._user);
+    this.clear();
     window.location.href = this.app_url + '/logout';
-    this.valid.next(false);
-    this.scope.next([]);
-  }
-
-  authParamUrl() : string {
-    if(this.valid.getValue()) {
-      let param = "?access_token=" + localStorage.getItem('token');
-      return param;
-    }
-  }
-
-  getUserInfo() : void {
-    let headers = new Headers();
-          headers.append('Authorization', 'Bearer '+ localStorage.getItem('token'));
-    this._http.get(this.auth_url + "/userinfo", { headers: headers })
-        .map(res => res.json(), err => {})
-        .subscribe(data => {
-          let user = new User(
-              data.email,
-              data.family_name,
-              data.given_name,
-              data.name,
-              data.phone_number,
-              data.user_id,
-              data.user_name
-          );
-          this._user = user;
-          this.user.next(this._user);
-        },
-        err => {
-          this._user = new User( "", "", "", "", "", "", "" );
-        });
   }
 
   checkToken() : Observable<Response> {
     if(Cookie.get('token')) {
       localStorage.setItem('token', Cookie.get('token'));
     }
-    let base64Credentials = btoa(`${this.client_id}:${this.client_secret}`);
-    let headers = new Headers();
-        headers.append('Content-type', 'application/x-www-form-encoded');
-        headers.append('Authorization', 'Basic '+ base64Credentials);
-    return this._http.post(this.auth_url + '/check_token?token='+ localStorage.getItem('token'), {}, { headers: headers })
+    let token = localStorage.getItem('token')? localStorage.getItem('token') : '';
+    return this._http.get(this.app_url + '/isauthenticated?token='+ token)
   }
 
 }

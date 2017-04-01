@@ -31,7 +31,7 @@
 <my-modal [title]="'Delete'" #cmodal>
         <div class="modal-body">
         <p>{{briefing}}</p>
-        <p *ngIf="(scope | async)?.includes('uaa.admin')">
+        <p *ngIf="(user | async)?.scope?.includes('uaa.admin')">
                 <i
                 class="fa" 
                 [class.fa-check-square-o]="checked"

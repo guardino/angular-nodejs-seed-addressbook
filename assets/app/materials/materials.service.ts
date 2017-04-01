@@ -1,4 +1,4 @@
-import { Http, RequestOptions } from '@angular/http';
+import { Http, URLSearchParams, RequestOptions } from '@angular/http';
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { AuthService } from '../auth/auth.service';
@@ -27,16 +27,18 @@ export class MaterialService{
     dataView = new BehaviorSubject<Array<Object>>(this._dataView);
 
     getAllData(){
-        let authParam = this._authService.authParamUrl();
-        return this._http.get(this.baseUrl + authParam)
+        let token = this._authService.getToken();
+        let params = this.composeQuery({access_token : token});
+        return this._http.get(this.baseUrl, { search: params })
                 .map(res => res.json());
     }
 
 
     getDataByName(name){
         this._materialsEventService.clearSearchData();
-        let authParam = this._authService.authParamUrl();
-        this._http.get(this.baseUrl + '/material' + authParam + '&query=' + name)
+        let token = this._authService.getToken();
+        let params = this.composeQuery({access_token : token, query: name});
+        this._http.get(this.baseUrl + '/material', { search: params })
                     .map(res => res.json())
                     .distinctUntilChanged()
                     .subscribe(data => {
@@ -49,8 +51,9 @@ export class MaterialService{
     }
 
     getColumns() {
-        let authParam = this._authService.authParamUrl();
-        this._http.get(this.baseUrl + '/columns' + authParam)
+        let token = this._authService.getToken();
+        let params = this.composeQuery({access_token : token});
+        this._http.get(this.baseUrl + '/columns', { search: params })
                     .map(res => {
                         return res.json();
                     })
@@ -63,10 +66,11 @@ export class MaterialService{
     }
 
     appendCsv(file): void {
-        let authParam = this._authService.authParamUrl();
+        let token = this._authService.getToken();
+        let params = this.composeQuery({access_token : token});
         let formData:FormData = new FormData();
         formData.append('file', file, file.name);
-        this._http.post(this.baseUrl + "/appendcsv" + authParam, formData)
+        this._http.post(this.baseUrl + "/appendcsv", formData, { search: params })
             .subscribe(data => console.log(data));
         // update columns and data view.
         this.getColumns();
@@ -74,10 +78,11 @@ export class MaterialService{
     }
 
     importCsv(file): void {
-        let authParam = this._authService.authParamUrl();
+        let token = this._authService.getToken();
+        let params = this.composeQuery({access_token : token});
         let formData:FormData = new FormData();
         formData.append('file', file, file.name);
-        this._http.post(this.baseUrl + "/importcsv" + authParam, formData)
+        this._http.post(this.baseUrl + "/importcsv", formData, { search: params })
             .subscribe(data => console.log(data));
         // update columns and data view.
         this.getColumns();
@@ -103,10 +108,11 @@ export class MaterialService{
     }
 
     createMaterial(material){
-        let authParam = this._authService.authParamUrl();
+        let token = this._authService.getToken();
+        let params = this.composeQuery({access_token : token});
         let body = JSON.stringify(material);
         if(typeof body != 'undefined') {
-            this._http.post(this.baseUrl + "/material" + authParam, body)
+            this._http.post(this.baseUrl + "/material", body, { search: params })
                         .map(res =>  res.json())
                         .subscribe(data => {
                             this.addData(data);
@@ -116,10 +122,11 @@ export class MaterialService{
     }
 
     updateMaterial(material) {
-        let authParam = this._authService.authParamUrl();
+        let token = this._authService.getToken();
+        let params = this.composeQuery({access_token : token});
         let body = JSON.stringify(material);
         if(typeof body != 'undefined') {
-            this._http.put(this.baseUrl + "/material" + authParam, body)
+            this._http.put(this.baseUrl + "/material", body, { search: params })
                         .map(res => res.json())
                         .subscribe(data => {
                             this.updateData(data);
@@ -128,8 +135,9 @@ export class MaterialService{
     }
 
     deleteMaterial(id) {
-        let authParam = this._authService.authParamUrl();
-        this._http.delete(this.baseUrl + "/material/" + id + authParam)
+        let token = this._authService.getToken();
+        let params = this.composeQuery({access_token : token});
+        this._http.delete(this.baseUrl + "/material/" + id, { search: params })
                     .subscribe(confirmation =>
                         console.log(confirmation)
                     );
@@ -150,6 +158,14 @@ export class MaterialService{
             this._data.splice(i,1);
         }
         this.data.next(this._data);
+    }
+
+    private composeQuery(json) {
+        let params: URLSearchParams = new URLSearchParams();
+        for (let key in json) {
+            params.set(key, json[key]);
+        }
+        return params;
     }
 
     private updateData(obj) {

@@ -14,7 +14,7 @@ export class NavComponent implements OnInit {
     @Input() appName= "";
 
     user;
-    valid;
+    isAuthenticated;
 
     constructor(
         private _authService: AuthService,
@@ -25,7 +25,7 @@ export class NavComponent implements OnInit {
 
     ngOnInit() {
         this.user = this._authService.user;
-        this.valid = this._authService.valid;
+        this.isAuthenticated = this._authService.isAuthenticated;
     }
 
     private onLogin() {

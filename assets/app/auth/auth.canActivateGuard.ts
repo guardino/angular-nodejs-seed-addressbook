@@ -5,6 +5,7 @@ import { Observable } from 'rxjs';
 import 'rxjs';
 
 import { AuthService } from './auth.service';
+import { User } from '../model/User';
 
 @Injectable()
 export class CanActivateViaOAuthGuard implements CanActivate {
@@ -17,23 +18,40 @@ export class CanActivateViaOAuthGuard implements CanActivate {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) : Observable<boolean> | boolean {
     return this._authService.checkToken()
                .map(res =>{
-                  let valid : boolean;
-                  if(res.status == 200) {
-                      valid = true;
-                      this._authService.getUserInfo();
-                      this._authService.scope.next(res.json().scope);
+                  let resJson = res.json();
+                  if(resJson.isAuthenticated == true) {
+                      this._authService.user.next(new User(
+                            resJson.body.user_id,
+                            resJson.body.user_name,
+                            resJson.body.email,
+                            resJson.body.client_id,
+                            resJson.body.exp,
+                            resJson.body.scope,
+                            resJson.body.jti,
+                            resJson.body.aud,
+                            resJson.body.sub,
+                            resJson.body.iss,
+                            resJson.body.iat,
+                            resJson.body.cid,
+                            resJson.body.grant_type,
+                            resJson.body.azp,
+                            resJson.body.auth_time,
+                            resJson.body.zid,
+                            resJson.body.rev_sig,
+                            resJson.body.origin,
+                            resJson.body.revocable
+                      ))
                   } else {
-                      valid = false;
                       this._router.navigateByUrl('/login');
-                      this._authService.clearCookiesAndStorage();
+                      this._authService.clear();
                   }
-                  this._authService.valid.next(valid);
-                  return valid;
+                  this._authService.isAuthenticated.next(resJson.isAuthenticated);
+                  return resJson.isAuthenticated;
               })
               .catch(error =>{
                   this._router.navigateByUrl('/login');
-                  this._authService.clearCookiesAndStorage();
-                  this._authService.valid.next(false);
+                  this._authService.clear();
+                  this._authService.isAuthenticated.next(false);
                   return Observable.of(false);
               }).take(1);
   }

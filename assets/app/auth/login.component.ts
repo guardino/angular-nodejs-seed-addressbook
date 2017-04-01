@@ -19,7 +19,7 @@ export class LoginComponent {
     ) {}
 
     onGeSsoClick() {
-        this._authService.clearCookiesAndStorage();
+        this._authService.clear();
         this._authService.login();
     }
 }

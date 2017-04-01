@@ -7,6 +7,7 @@ import { JsonObjectPipe } from '../../common/json-object.pipe';
 import { MaterialsEventService } from '../materials.event.service';
 import { MaterialService } from '../materials.service';
 import { AuthService } from '../../auth/auth.service';
+import { User } from '../../model/User';
 
 @Component({
     selector: 'my-cards',
@@ -40,7 +41,7 @@ export class CardsComponent implements OnInit{
     briefing = "You will delete this card from your library.";
     checkbox = "Delete from database. (Careful)";
 
-    scope :BehaviorSubject<string[]>;
+    user :BehaviorSubject<User>;
 
     constructor(
         private _dragulaService: DragulaService,
@@ -50,7 +51,7 @@ export class CardsComponent implements OnInit{
     ) { }
 
     ngOnInit() {
-        this.scope = this._authService.scope;
+        this.user = this._authService.user;
         this._dragulaService.dropModel.subscribe(value => { });
         this._materialsEventService.data.subscribe(data => {
             this.newData = data;

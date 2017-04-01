@@ -10,7 +10,7 @@
                     <i class="fa fa-search fa-lg" aria-hidden="true"></i>
                 </a>
             </li>
-            <li class="nav-item" *ngIf="(scope | async)?.includes('uaa.admin')">
+            <li class="nav-item" *ngIf="(user | async)?.scope?.includes('uaa.admin')">
                 <a class="nav-link"
                    [routerLink]="['/']"
                    href="#"
@@ -19,7 +19,7 @@
                     <i class="fa fa-upload fa-lg" aria-hidden="true"></i>
                 </a>
             </li>
-            <li class="nav-item" *ngIf="(scope | async)?.includes('uaa.admin')">
+            <li class="nav-item" *ngIf="(user | async)?.scope?.includes('uaa.admin')">
                 <a class="nav-link"
                    [routerLink]="['/']"
                    href="#"

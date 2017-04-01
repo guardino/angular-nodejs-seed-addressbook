@@ -6,6 +6,7 @@ import { RouterLink } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 
 import { AuthService } from '../../auth/auth.service';
+import { User } from '../../model/User';
 import { MaterialsEventService } from '../materials.event.service';
 
 @Component({
@@ -41,7 +42,7 @@ import { MaterialsEventService } from '../materials.event.service';
 export class ToolBoxComponent implements OnInit {
 
     index: BehaviorSubject<String>;
-    scope: BehaviorSubject<string[]>;
+    user: BehaviorSubject<User>;
 
     constructor(
         private _materialEventService : MaterialsEventService,
@@ -50,7 +51,7 @@ export class ToolBoxComponent implements OnInit {
 
     ngOnInit() {
         this.index = this._materialEventService.sidebarIndex;
-        this.scope = this._authService.scope;
+        this.user = this._authService.user;
     }
 
     onClick(option: String) : void {

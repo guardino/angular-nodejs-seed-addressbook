@@ -1,7 +1,7 @@
 <div class="card">
     <div class="card-header">
         <!-- Edit Button -->
-        <a (click)="onEdit()" *ngIf="(scope | async)?.includes('uaa.admin')">
+        <a (click)="onEdit()" *ngIf="(user | async)?.scope?.includes('uaa.admin')">
           <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
         </a>
 

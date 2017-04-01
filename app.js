@@ -71,6 +71,41 @@ app.get('/logout', function(req, res) {
     res.redirect(config.uaaURL + '/logout?redirect=' + config.appURL);
 })
 
+app.get('/isauthenticated', function (req, res) {
+    var token = req.query.token ? req.query.token : req.body.token;
+    if(typeof token === 'undefined') {
+        res.status = 401;
+        return res.json('Can not find token.')
+    }
+    if(!config.clientId || !config.clientSecret) {
+        res.status = 401;
+        return res.json('Can not find client credentials.')
+    }    
+    
+    const base64Credentials = Buffer.from(config.clientId + ':' + config.clientSecret).toString('base64');
+    
+    const headers = {
+        'Content-Type'      :  'application/x-www-form-urlencoded',
+        'Authorization'     :  'Basic ' + base64Credentials
+    }
+
+    const options = {
+        url: config.uaaURL + '/check_token?token=' + token,
+        method: 'POST',
+        headers: headers
+    }
+
+    return request(options, function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+            return res.json({
+                isAuthenticated : true,
+                body : JSON.parse(body)
+            })
+        }
+        return res.err(error);
+    })
+})
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
     return res.render('index');
