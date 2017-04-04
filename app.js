@@ -1,17 +1,25 @@
-var express = require('express');
-var path = require('path');
-var favicon = require('serve-favicon');
-var logger = require('morgan');
-var request = require('request');
-var cookieParser = require('cookie-parser');
-var bodyParser = require('body-parser');
+const express = require('express');
+const path = require('path');
+const favicon = require('serve-favicon');
+const logger = require('morgan');
+const request = require('request');
+const cookieParser = require('cookie-parser');
+const bodyParser = require('body-parser');
+const session = require('express-session');
 
 var passport = require('passport');
-var passportConfig = require('./passport-config');
-var session = require('express-session');
-var config = require('./predix-config');
+const passportConfig = require('./passport-config');
+const config = require('./predix-config');
 
-var appRoutes = require('./routes/app');
+const RedisStore = require('connect-redis')(session);
+const redis = require('redis');
+const redisClient  = redis.createClient(config.redisStore);
+
+redisClient.on('error', function(err){
+    console.log('Error '+ err);
+})
+
+const appRoutes = require('./routes/app');
 
 var app = express();
 
@@ -36,11 +44,16 @@ app.use(function (req, res, next) {
 
 passport = passportConfig.configurePassportStrategy();
 
-app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: false
+app.use(session({  
+    store: new RedisStore({
+        url: config.redisStore.url,
+        client: redisClient
+    }),
+    secret: config.redisStore.password ? config.redisStore.password : 'password',
+    resave: false,
+    saveUninitialized: false
 }));
+
 app.use(passport.initialize());
 // Also use passport.session() middleware, to support persistent login sessions (recommended).
 app.use(passport.session());
@@ -55,24 +68,45 @@ app.get('/signin', passport.authenticate('predix', {'scope': ''}), function(req,
 app.get('/signin/callback', function(req, res, next) {
     passport.authenticate('predix', function(err, user, info) {
         if(err) { return next(err); }
-        if(!user) { return res.redirect('/login'); }
+        if(!user) { return res.redirect('/#/login'); }
         req.logIn(user, function(err) {
             if (err) { return next(err); }
-            res.cookie('token', user.ticket.access_token);
-            return res.redirect('/material');
+            redisClient.set('token', user.ticket.access_token);
+            return res.redirect('/#/material');
         });
     })(req, res, next);
 });
 
+app.get('/signin/token', function(req, res, next) {
+    if(redisClient.exists('token')){
+        redisClient.get('token', function(err, value) {
+            if(err) {
+                res.json({
+                    error: err
+                })
+            }
+            res.json({
+                token: value
+            })
+        })
+    } else {
+        res.redirect('/#/login');
+    }
+    return res;
+});
+
 app.get('/logout', function(req, res) {
-    req.session.destroy();
+    if(req.session) {
+        req.session.destroy();
+    }
+    redisClient.del('token');
     req.logout();
     passportConfig.reset();
     res.redirect(config.uaaURL + '/logout?redirect=' + config.appURL);
 })
 
 app.get('/isauthenticated', function (req, res) {
-    var token = req.query.token ? req.query.token : req.body.token;
+    var token = req.query.token;
     if(typeof token === 'undefined') {
         res.status = 401;
         return res.json('Can not find token.')
@@ -96,13 +130,16 @@ app.get('/isauthenticated', function (req, res) {
     }
 
     return request(options, function (error, response, body) {
+        console.log(!error);
+        console.log(response.statusCode);
         if (!error && response.statusCode == 200) {
             return res.json({
                 isAuthenticated : true,
                 body : JSON.parse(body)
             })
         }
-        return res.err(error);
+        console.log('Here we are ')
+        return res.json(error);
     })
 })
 

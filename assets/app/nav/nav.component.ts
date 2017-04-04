@@ -19,9 +19,7 @@ export class NavComponent implements OnInit {
     constructor(
         private _authService: AuthService,
         private _router: Router
-    ){ 
-        this._authService.checkToken();
-    }
+    ){ }
 
     ngOnInit() {
         this.user = this._authService.user;

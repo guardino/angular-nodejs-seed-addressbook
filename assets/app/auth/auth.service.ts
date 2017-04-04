@@ -16,13 +16,13 @@ export class AuthService {
   private client_id = process.env.client_id;
   private client_secret = process.env.client_secret;
   private _user : User;
+  private _token : string = '';
 
   user = new BehaviorSubject<User>(this._user);
+  token = new BehaviorSubject<string>(this._token);
   isAuthenticated = new BehaviorSubject<boolean>(false);
 
-  constructor(private _http: Http, private _router: Router) {
-    this.checkToken();
-  }
+  constructor(private _http: Http, private _router: Router) { }
 
   clear() : void {
     localStorage.removeItem('token');
@@ -32,8 +32,9 @@ export class AuthService {
     this.user.next(this._user);
   }
 
-  getToken() : string {
-    return localStorage.getItem('token');
+  getToken() : Observable<Response> {
+    return this._http.get(this.app_url + '/signin/token')
+              .map(res => res.json().token)
   }
 
   login() : void {
@@ -46,11 +47,9 @@ export class AuthService {
   }
 
   checkToken() : Observable<Response> {
-    if(Cookie.get('token')) {
-      localStorage.setItem('token', Cookie.get('token'));
-    }
-    let token = localStorage.getItem('token')? localStorage.getItem('token') : '';
-    return this._http.get(this.app_url + '/isauthenticated?token='+ token)
+    return this.getToken().flatMap(token => {
+      return this._http.get(this.app_url + '/isauthenticated?token=' + token)
+                        .catch(err => Observable.throw(err.json().error || 'Unknown error'));
+    })
   }
-
 }

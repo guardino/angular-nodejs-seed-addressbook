@@ -18,6 +18,7 @@ export class CanActivateViaOAuthGuard implements CanActivate {
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) : Observable<boolean> | boolean {
     return this._authService.checkToken()
                .map(res =>{
+                   console.log(res)
                   let resJson = res.json();
                   if(resJson.isAuthenticated == true) {
                       this._authService.user.next(new User(

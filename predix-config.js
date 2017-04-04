@@ -20,15 +20,26 @@ if(node_env === 'development') {
 	settings.tokenURL = devConfig.uaaURL;
 	settings.appURL = devConfig.appURL;
 	settings.callbackURL = devConfig.appURL + '/signin/callback';
+	settings.redisStore = devConfig.redisStore;
+	settings.redisStore.host = devConfig.redisStore.host;
+	settings.redisStore.port = devConfig.redisStore.port;
 
 } else {
 	// read VCAP_SERVICES
-	var vcapsServices = JSON.parse(process.env.VCAP_SERVICES);
-	var uaaService = vcapsServices[process.env.uaa_service_label];
+	const vcapsServices = JSON.parse(process.env.VCAP_SERVICES);
+	const uaaService = vcapsServices[process.env.uaa_service_label];
+	const redisService = vcapsServices[process.env.redis_service_label];
 
 	if(uaaService) {
     	settings.uaaURL = uaaService[0].credentials.uri;
 		settings.tokenURL = uaaService[0].credentials.uri;
+	}
+
+	if(redisService) {
+		settings.redisStore = redisService[0].credentials;
+		settings.redisStore.host = redisService[0].credentials.host;
+		settings.redisStore.password = redisService[0].credentials.password;
+		settings.redisStore.port = redisService[0].credentials.port;
 	}
 
 	// read VCAP_APPLICATION

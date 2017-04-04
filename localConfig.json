@@ -5,6 +5,10 @@
         "callbackURL": "/signin/callback",
         "uaaURL": "https://7391cf8a-2d32-45f5-8884-cf36e36c3fdb.predix-uaa.run.aws-usw02-pr.ice.predix.io",
         "appURL": "http://localhost:3000",
-        "tokenURL": "https://7391cf8a-2d32-45f5-8884-cf36e36c3fdb.predix-uaa.run.aws-usw02-pr.ice.predix.io"
+        "tokenURL": "https://7391cf8a-2d32-45f5-8884-cf36e36c3fdb.predix-uaa.run.aws-usw02-pr.ice.predix.io",
+        "redisStore": {
+            "host": "127.0.0.1",
+            "port": "6379"
+        }
     }
 }

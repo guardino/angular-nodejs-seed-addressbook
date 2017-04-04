@@ -1,4 +1,3 @@
----
 applications:
 - name: periodic-elements-demo
   memory: 128M
@@ -6,8 +5,10 @@ applications:
   command:  node ./bin/www
 services:
     - periodic-elements-demo-uaa
+    - periodic-elements-demo-redis
 env:
     node_env: cloud
     uaa_service_label : predix-uaa
+    redis_service_label : redis-17
     clientId: elements
     clientSecret: mendeleev

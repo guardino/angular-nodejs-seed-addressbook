@@ -26,64 +26,67 @@ export class MaterialService{
     columns = new BehaviorSubject<Array<Object>>(this._columns);
     dataView = new BehaviorSubject<Array<Object>>(this._dataView);
 
-    getAllData(){
-        let token = this._authService.getToken();
-        let params = this.composeQuery({access_token : token});
-        return this._http.get(this.baseUrl, { search: params })
-                .map(res => res.json());
+    getAllData() {
+        return this._authService.getToken().flatMap(token => {
+            let params = this.composeQuery({access_token : token});
+            return this._http.get(this.baseUrl, { search: params })
+                    .map(res => res.json());
+        })
     }
 
 
     getDataByName(name){
         this._materialsEventService.clearSearchData();
-        let token = this._authService.getToken();
-        let params = this.composeQuery({access_token : token, query: name});
-        this._http.get(this.baseUrl + '/material', { search: params })
-                    .map(res => res.json())
-                    .distinctUntilChanged()
-                    .subscribe(data => {
-                        if(name == "" || name === null || typeof name === 'undefined') {
-                            this._materialsEventService.search.next([]);
-                        } else {
-                            this._materialsEventService.search.next(data);
-                        }
-                    });
+        this._authService.getToken().flatMap(token => {
+            let params = this.composeQuery({access_token : token, query: name});
+            return this._http.get(this.baseUrl + '/material', { search: params })
+                        .map(res => res.json())
+        })
+        .distinctUntilChanged()
+        .subscribe(data => {
+            if(name == "" || name === null || typeof name === 'undefined') {
+                this._materialsEventService.search.next([]);
+            } else {
+                this._materialsEventService.search.next(data);
+            }
+        });
     }
 
     getColumns() {
-        let token = this._authService.getToken();
-        let params = this.composeQuery({access_token : token});
-        this._http.get(this.baseUrl + '/columns', { search: params })
-                    .map(res => {
-                        return res.json();
-                    })
-                    .distinctUntilChanged()
-                    .subscribe(data => {
-                        this._columns = data;
-                        this.updateDataView();
-                        this.columns.next(this._columns);
-                    });
+        this._authService.getToken().flatMap(token => {
+            let params = this.composeQuery({access_token : token});
+            return this._http.get(this.baseUrl + '/columns', { search: params })
+                    .map(res => res.json())
+        })
+        .distinctUntilChanged()
+        .subscribe(data => {
+            this._columns = data;
+            this.updateDataView();
+            this.columns.next(this._columns);
+        });
     }
 
     appendCsv(file): void {
-        let token = this._authService.getToken();
-        let params = this.composeQuery({access_token : token});
         let formData:FormData = new FormData();
         formData.append('file', file, file.name);
-        this._http.post(this.baseUrl + "/appendcsv", formData, { search: params })
-            .subscribe(data => console.log(data));
+        this._authService.getToken().flatMap(token => {
+            let params = this.composeQuery({access_token : token});
+            return this._http.post(this.baseUrl + "/appendcsv", formData, { search: params })
+        })
+        .subscribe(data => console.log(data));
         // update columns and data view.
         this.getColumns();
         this.updateDataView();
     }
 
     importCsv(file): void {
-        let token = this._authService.getToken();
-        let params = this.composeQuery({access_token : token});
         let formData:FormData = new FormData();
         formData.append('file', file, file.name);
-        this._http.post(this.baseUrl + "/importcsv", formData, { search: params })
-            .subscribe(data => console.log(data));
+        this._authService.getToken().flatMap(token => {
+            let params = this.composeQuery({access_token : token});
+            return this._http.post(this.baseUrl + "/importcsv", formData, { search: params })
+        })
+        .subscribe(data => console.log(data));
         // update columns and data view.
         this.getColumns();
         this.updateDataView();
@@ -108,39 +111,42 @@ export class MaterialService{
     }
 
     createMaterial(material){
-        let token = this._authService.getToken();
-        let params = this.composeQuery({access_token : token});
         let body = JSON.stringify(material);
         if(typeof body != 'undefined') {
-            this._http.post(this.baseUrl + "/material", body, { search: params })
-                        .map(res =>  res.json())
-                        .subscribe(data => {
-                            this.addData(data);
-                            this.data.next(this._data);
-                        });
+            this._authService.getToken().flatMap(token => {
+                let params = this.composeQuery({access_token : token});
+                return this._http.post(this.baseUrl + "/material", body, { search: params })
+                                .map(res =>  res.json())
+            })
+            .subscribe(data => {
+                this.addData(data);
+                this.data.next(this._data);
+            });
         }
     }
 
     updateMaterial(material) {
-        let token = this._authService.getToken();
-        let params = this.composeQuery({access_token : token});
         let body = JSON.stringify(material);
         if(typeof body != 'undefined') {
-            this._http.put(this.baseUrl + "/material", body, { search: params })
-                        .map(res => res.json())
-                        .subscribe(data => {
-                            this.updateData(data);
-                        });
+            this._authService.getToken().flatMap(token => {
+                let params = this.composeQuery({access_token : token});
+                return this._http.put(this.baseUrl + "/material", body, { search: params })
+                                .map(res => res.json())
+            })
+            .subscribe(data => {
+                this.updateData(data);
+            });
         }
     }
 
     deleteMaterial(id) {
-        let token = this._authService.getToken();
-        let params = this.composeQuery({access_token : token});
-        this._http.delete(this.baseUrl + "/material/" + id, { search: params })
-                    .subscribe(confirmation =>
-                        console.log(confirmation)
-                    );
+        this._authService.getToken().flatMap(token => {
+            let params = this.composeQuery({access_token : token});
+            return this._http.delete(this.baseUrl + "/material/" + id, { search: params })
+        })
+        .subscribe(confirmation =>
+            console.log(confirmation)
+        );
     }
 
     addData(obj) {
