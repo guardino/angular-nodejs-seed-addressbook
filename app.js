@@ -71,15 +71,17 @@ app.get('/signin/callback', function(req, res, next) {
         if(!user) { return res.redirect('/#/login'); }
         req.logIn(user, function(err) {
             if (err) { return next(err); }
-            redisClient.set('token', user.ticket.access_token);
-            return res.redirect('/#/material');
+            redisClient.hset(user.user_name, 'token', user.ticket.access_token);
+            redisClient.hset(user.user_name, 'scope', user.scope.toString().substring(1, user.scope.toString()-1));
+            return res.redirect(303, '/#/login?username=' + user.user_name);
         });
     })(req, res, next);
 });
 
 app.get('/signin/token', function(req, res, next) {
-    if(redisClient.exists('token')){
-        redisClient.get('token', function(err, value) {
+    var username = req.query.username ? req.query.username : '';
+    if(redisClient.exists(username, 'token')){
+        redisClient.hget(username, 'token', function(err, value) {
             if(err) {
                 res.json({
                     error: err
@@ -96,10 +98,13 @@ app.get('/signin/token', function(req, res, next) {
 });
 
 app.get('/logout', function(req, res) {
+    var username = req.query.username ? req.query.username : '';
     if(req.session) {
         req.session.destroy();
     }
-    redisClient.del('token');
+    if(redisClient.exists(username, 'token')){
+        redisClient.del(username, 'token');
+    }
     req.logout();
     passportConfig.reset();
     res.redirect(config.uaaURL + '/logout?redirect=' + config.appURL);
@@ -130,15 +135,18 @@ app.get('/isauthenticated', function (req, res) {
     }
 
     return request(options, function (error, response, body) {
-        console.log(!error);
-        console.log(response.statusCode);
         if (!error && response.statusCode == 200) {
             return res.json({
                 isAuthenticated : true,
                 body : JSON.parse(body)
             })
         }
-        console.log('Here we are ')
+        if(response.statusCode == 400) {
+            return res.json({
+                isAuthenticated: false,
+                body : JSON.parse(error)
+            });
+        }
         return res.json(error);
     })
 })

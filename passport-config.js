@@ -1,7 +1,8 @@
 var passport = require('passport');
-var PredixStrategy = require('passport-predix-oauth').Strategy;
-var OAuth2RefreshTokenStrategy = require('passport-oauth2-middleware').Strategy;
-var config = require('./predix-config');
+const PredixStrategy = require('passport-predix-oauth').Strategy;
+const OAuth2RefreshTokenStrategy = require('passport-oauth2-middleware').Strategy;
+const config = require('./predix-config');
+const request = require('request');
 var predixStrategy;
 
 function configurePassportStrategy(predixConfig) {
@@ -20,6 +21,7 @@ function configurePassportStrategy(predixConfig) {
 		// console.log("From USER-->"+JSON.stringify(user));
 		done(null, user);
 	});
+
 	passport.deserializeUser(function(obj, done) {
 		done(null, obj);
 	});
@@ -28,15 +30,41 @@ function configurePassportStrategy(predixConfig) {
 		clientID: config.clientId,
 		clientSecret: config.clientSecret,
 		callbackURL: config.callbackURL,
-		authorizationURL: config.uaaURL,
-		tokenURL: config.tokenURL
+		uaaURL: config.uaaURL
 	},
-	refreshStrategy.getOAuth2StrategyCallback() //Create a callback for OAuth2Strategy
-	// function(accessToken, refreshToken, profile, done) {
-	// 	console.log(accessToken);
-	// 	token = accessToken;
-	// 	done(null, profile);
-	// }
+	function(accessToken, refreshToken, user, done) {
+			request({
+				method: 'post',
+				url: config.uaaURL + '/check_token',
+				headers: {
+					'Content-Type': 'application/x-www-form-urlencoded',
+					'Authorization': 'Basic ' + Buffer.from(config.clientId + ':' + config.clientSecret).toString('base64')
+				},
+				form: {
+					'token': accessToken
+				}
+			}, function(error, response, body) {
+				user.ticket = user.ticket? user.ticket : {};
+				user.ticket.access_token = accessToken;
+				user.ticket.refresh_token = refreshToken;
+
+				var userinfo = JSON.parse(body);
+
+				if (error || userinfo.error !== undefined) {
+					// return an error, don't forget this step
+				} else {
+					// Merge existing parsed user data with UAA userinfo data
+					// into a existing user
+					for (var key in userinfo) {
+						if (userinfo.hasOwnProperty(key)) {
+							user[key] = userinfo[key];
+						}
+					}
+				}
+				// console.log("User" + JSON.stringify(user))
+				done(null, user);
+		});
+	}
 );
 
 	passport.use(predixStrategy);

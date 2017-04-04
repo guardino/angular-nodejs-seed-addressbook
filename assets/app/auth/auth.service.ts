@@ -33,8 +33,10 @@ export class AuthService {
   }
 
   getToken() : Observable<Response> {
-    return this._http.get(this.app_url + '/signin/token')
+    return this.user.asObservable().flatMap(user => {
+        return this._http.get(this.app_url + '/signin/token?username=' + user.user_name)
               .map(res => res.json().token)
+    })
   }
 
   login() : void {
