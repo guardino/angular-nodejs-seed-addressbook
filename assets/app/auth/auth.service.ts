@@ -18,23 +18,23 @@ export class AuthService {
   private _user : User;
   private _token : string = '';
 
+  
   user = new BehaviorSubject<User>(this._user);
   token = new BehaviorSubject<string>(this._token);
   isAuthenticated = new BehaviorSubject<boolean>(false);
+  sid = new BehaviorSubject<string>('');
 
   constructor(private _http: Http, private _router: Router) { }
 
   clear() : void {
-    localStorage.removeItem('token');
-    Cookie.delete('token');
-    Cookie.delete('connect.sid');
+    this.isAuthenticated.next(false);
     this._user = new User( "", "", "", "", "", [], "", [], "", "", "", "", "", "", "", "", "", "", null );
     this.user.next(this._user);
   }
 
   getToken() : Observable<Response> {
-    return this.user.asObservable().flatMap(user => {
-        return this._http.get(this.app_url + '/signin/token?username=' + user.user_name)
+    return this.sid.asObservable().flatMap(sid => {
+        return this._http.get(this.app_url + '/signin/token?sid=' + sid)
               .map(res => res.json().token)
     })
   }

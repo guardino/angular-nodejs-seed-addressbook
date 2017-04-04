@@ -1,9 +1,6 @@
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router'
-import { Cookie } from 'ng2-cookies/ng2-cookies';
+import { Component } from '@angular/core';
 
 import { AuthService } from './auth.service';
-import { User } from '../model/User';
 
 @Component({
     selector: 'my-login',
@@ -14,21 +11,11 @@ import { User } from '../model/User';
     `
 })
 
-export class LoginComponent implements OnInit {
+export class LoginComponent {
 
     constructor(
-        private route : ActivatedRoute,
-        private router : Router,
         private _authService : AuthService
     ) {}
-
-    ngOnInit() {
-        this.route.queryParams
-                    .subscribe(params => {
-                        this._authService.user.next(new User("", params['username'], "", "", "", [], "", [], "", "", "", "", "", "", "", "", "", "", null));
-                        this.router.navigate(['material']);
-                    });
-    }
 
     onGeSsoClick() {
         this._authService.login();

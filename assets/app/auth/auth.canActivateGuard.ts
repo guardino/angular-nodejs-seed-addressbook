@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { CanActivate , Router, ActivatedRouteSnapshot, RouterStateSnapshot} from '@angular/router';
-import { Cookie } from 'ng2-cookies/ng2-cookies';
 import { Observable } from 'rxjs';
 import 'rxjs';
 
@@ -15,7 +14,12 @@ export class CanActivateViaOAuthGuard implements CanActivate {
     private _authService : AuthService
   ) { }
   
-  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) : Observable<boolean> | boolean {
+  canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) : Observable<boolean> | boolean {  
+    let target = 'sid';
+    let sid = this.findQueryString(state.url, target);
+    if(sid.length > 0) {
+        this._authService.sid.next(sid);
+    }
     return this._authService.checkToken()
                .map(res =>{
                    console.log(res)
@@ -52,9 +56,26 @@ export class CanActivateViaOAuthGuard implements CanActivate {
               .catch(error =>{
                   this._router.navigateByUrl('/login');
                   this._authService.clear();
-                  this._authService.isAuthenticated.next(false);
                   return Observable.of(false);
               }).take(1);
+  }
+
+  findQueryString(url : string, target: string) : string {
+      if(url.indexOf('?') > -1){
+        let query = url.substring(url.indexOf('?')+1);
+        // grab username query
+        if(query.indexOf(target) > -1){
+            let username = query.substring(query.indexOf(target) + target.length + 1);
+            if(username.indexOf('&') > -1) {
+                username = username.substring(0, username.indexOf('&'));
+            }
+            return username;
+        }
+        // no username query exists
+        return '';
+      }
+      // no query exists
+      return '';
   }
 
 }

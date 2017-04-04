@@ -71,17 +71,18 @@ app.get('/signin/callback', function(req, res, next) {
         if(!user) { return res.redirect('/#/login'); }
         req.logIn(user, function(err) {
             if (err) { return next(err); }
-            redisClient.hset(user.user_name, 'token', user.ticket.access_token);
+            const sid = req.cookies["connect.sid"];
+            redisClient.hset(sid, 'token', user.ticket.access_token);
             redisClient.hset(user.user_name, 'scope', user.scope.toString().substring(1, user.scope.toString()-1));
-            return res.redirect(303, '/#/login?username=' + user.user_name);
+            return res.redirect(303, '/#/materials?sid=' + sid);
         });
     })(req, res, next);
 });
 
 app.get('/signin/token', function(req, res, next) {
-    var username = req.query.username ? req.query.username : '';
-    if(redisClient.exists(username, 'token')){
-        redisClient.hget(username, 'token', function(err, value) {
+    var sid = req.query.sid ? req.query.sid : '';
+    if(redisClient.exists(sid, 'token')){
+        redisClient.hget(sid, 'token', function(err, value) {
             if(err) {
                 res.json({
                     error: err
@@ -98,12 +99,12 @@ app.get('/signin/token', function(req, res, next) {
 });
 
 app.get('/logout', function(req, res) {
-    var username = req.query.username ? req.query.username : '';
+    var sid = req.query.sid ? req.query.sid : '';
     if(req.session) {
         req.session.destroy();
     }
-    if(redisClient.exists(username, 'token')){
-        redisClient.del(username, 'token');
+    if(redisClient.exists(sid, 'token')){
+        redisClient.del(sid, 'token');
     }
     req.logout();
     passportConfig.reset();
