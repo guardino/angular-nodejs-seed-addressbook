@@ -20,6 +20,7 @@ redisClient.on('error', function(err){
 })
 
 const appRoutes = require('./routes/app');
+const dataviewRoutes = require('./routes/dataview');
 
 var app = express();
 
@@ -47,7 +48,8 @@ passport = passportConfig.configurePassportStrategy();
 app.use(session({  
     store: new RedisStore({
         url: config.redisStore.url,
-        client: redisClient
+        client: redisClient,
+        ttl: 43199
     }),
     secret: config.redisStore.password ? config.redisStore.password : 'password',
     resave: false,
@@ -59,6 +61,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 
 app.use('/', appRoutes);
+app.use('/dataview', dataviewRoutes);
 
 app.get('/signin', passport.authenticate('predix', {'scope': ''}), function(req, res) {
     // The request will be redirected to Predix for authentication, so this
@@ -71,9 +74,12 @@ app.get('/signin/callback', function(req, res, next) {
         if(!user) { return res.redirect('/#/login'); }
         req.logIn(user, function(err) {
             if (err) { return next(err); }
-            const sid = req.cookies["connect.sid"];
-            redisClient.hset(sid, 'token', user.ticket.access_token);
-            redisClient.hset(user.user_name, 'scope', user.scope.toString().substring(1, user.scope.toString()-1));
+            const sid = req.cookies["connect.sid"] ? req.cookies["connect.sid"] : '';
+            if(existsInRedis(sid)) {
+                redisClient.hset(sid, 'token', user.ticket.access_token);
+                redisClient.expireat(sid, user.exp);
+            }
+            redisClient.hset(user.user_name, 'scope', user.scope.toString());
             return res.redirect(303, '/#/materials?sid=' + sid);
         });
     })(req, res, next);
@@ -81,7 +87,12 @@ app.get('/signin/callback', function(req, res, next) {
 
 app.get('/signin/token', function(req, res, next) {
     var sid = req.query.sid ? req.query.sid : '';
-    if(redisClient.exists(sid, 'token')){
+    if(sid == '') {
+        return res.json({
+            token: ''
+        });
+    }
+    if(existsInRedis(sid)){
         redisClient.hget(sid, 'token', function(err, value) {
             if(err) {
                 res.json({
@@ -103,7 +114,7 @@ app.get('/logout', function(req, res) {
     if(req.session) {
         req.session.destroy();
     }
-    if(redisClient.exists(sid, 'token')){
+    if(existsInRedis(sid)){
         redisClient.del(sid, 'token');
     }
     req.logout();
@@ -112,8 +123,8 @@ app.get('/logout', function(req, res) {
 })
 
 app.get('/isauthenticated', function (req, res) {
-    var token = req.query.token;
-    if(typeof token === 'undefined') {
+    var token = req.query.token ? req.query.token : '';
+    if(token == '') {
         res.status = 401;
         return res.json('Can not find token.')
     }
@@ -142,7 +153,7 @@ app.get('/isauthenticated', function (req, res) {
                 body : JSON.parse(body)
             })
         }
-        if(response.statusCode == 400) {
+        if(!error && response.statusCode == 400) {
             return res.json({
                 isAuthenticated: false,
                 body : JSON.parse(error)
@@ -151,6 +162,13 @@ app.get('/isauthenticated', function (req, res) {
         return res.json(error);
     })
 })
+
+var existsInRedis = function(key) {
+    return redisClient.exists(key, function(err, reply) {
+        if(reply == 0)
+            return false;
+    });
+}
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

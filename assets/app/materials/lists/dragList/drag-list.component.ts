@@ -82,7 +82,7 @@ export class DragListComponent implements OnInit {
             this.selectedBag[i].value = true;
             this.dataView.push(this.selectedBag[i]);
         }
-        this._materialService.dataView.next(this.dataView);
+        this._materialService.updateDataView(this.dataView);
         this.onConfirm.emit({clicked: true});
     }
 

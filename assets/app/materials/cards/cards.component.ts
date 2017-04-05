@@ -100,7 +100,7 @@ export class CardsComponent implements OnInit{
 
     addClick() : void {
         this._materialService.addData(new JsonObjectPipe().transform(this.newData));
-        this._materialsEventService.updateSidebarIndex("");
+        // this._materialsEventService.updateSidebarIndex("");
         this.newData = [];
     }
 }

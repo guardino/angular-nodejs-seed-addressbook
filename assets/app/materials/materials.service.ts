@@ -3,12 +3,14 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs/BehaviorSubject';
 import { AuthService } from '../auth/auth.service';
 import { MaterialsEventService } from './materials.event.service';
+import { Observable } from 'rxjs';
 import 'rxjs';
 
 @Injectable()
 export class MaterialService{
 
     private baseUrl = process.env.baseUrl;
+    private appUrl = process.env.appUrl;
 
     constructor(
         private _http: Http, 
@@ -19,12 +21,10 @@ export class MaterialService{
     }
 
     private _data = [];
-    private _columns = [];
-    private _dataView = [];
 
     data = new BehaviorSubject<Array<Object>>(this._data);
-    columns = new BehaviorSubject<Array<Object>>(this._columns);
-    dataView = new BehaviorSubject<Array<Object>>(this._dataView);
+    columns = new BehaviorSubject<Array<Object>>([]);
+    dataView = new BehaviorSubject<Array<Object>>([]);
 
     getAllData() {
         return this._authService.getToken().flatMap(token => {
@@ -60,9 +60,9 @@ export class MaterialService{
         })
         .distinctUntilChanged()
         .subscribe(data => {
-            this._columns = data;
-            this.updateDataView();
-            this.columns.next(this._columns);
+            this.getDataView();
+            this.columns.next(data);
+            this.columns.complete();
         });
     }
 
@@ -76,7 +76,7 @@ export class MaterialService{
         .subscribe(data => console.log(data));
         // update columns and data view.
         this.getColumns();
-        this.updateDataView();
+        this.getDataView();
     }
 
     importCsv(file): void {
@@ -89,25 +89,101 @@ export class MaterialService{
         .subscribe(data => console.log(data));
         // update columns and data view.
         this.getColumns();
-        this.updateDataView();
+        this.getDataView();
     }
 
-    updateDataView() {
-        // TODO: grab this from the server backend.
-        this.columns.subscribe(res => {
-            for(let i=0; i<res.length; i++) {
-                let exists: boolean = false;
-                for(let j=0; j<this._dataView.length; j++) {
-                    if(this._dataView[j].key.trim().toLowerCase() == res[i].toString().trim().toLowerCase()) {
-                        exists = true;
+    getDataView() {
+        this._authService.user.subscribe(user => {
+            let _dataView = [];
+            let params = this.composeQuery({username : user.user_name});
+            if(user.scope.indexOf('uaa.admin') > -1) {
+                this._http.get(this.appUrl + "/dataView/userview", { search: params })
+                            .map(res => res.json().dataview)
+                            .subscribe(userview => {
+                                let columns = this.columns.getValue();
+                                for(let i=0; i<userview.length; i++) {
+                                    let exists: boolean = false;
+                                    for(let j=0; j<columns.length; j++) {
+                                        if(userview[i].trim().toLowerCase() == columns[j].toString().trim().toLowerCase()) {
+                                            exists = true;
+                                        }
+                                    }
+                                    if(exists) {
+                                        _dataView.push({key: userview[i] , value: exists});
+                                    }
+                                }
+                                for(let i=0; i<columns.length; i++) {
+                                    let exists: boolean = false;
+                                    for(let j=0; j<_dataView.length; j++) {
+                                        if(_dataView[j].key.trim().toLowerCase() == columns[i].toString().trim().toLowerCase()) {
+                                            exists = true;
+                                        }
+                                    }
+                                    if(!exists)
+                                        _dataView.push({key: columns[i] , value: exists});
+                                }
+                                this.dataView.next(_dataView);
+                            })
+            } 
+            if(user.scope.indexOf('uaa.admin') == -1 && user.scope.indexOf('uaa.user') > -1){
+                Observable.forkJoin([
+                    this._http.get(this.appUrl + "/dataView/defaultview").map(res => res.json().dataview),
+                    this._http.get(this.appUrl + "/dataView/userview", { search: params }).map(res => res.json().dataview)
+                ]).subscribe(data => {
+                    let columns = data[0];
+                    let userview = data[1];
+                    for(let i=0; i<userview.length; i++) {
+                        let exists: boolean = false;
+                        for(let j=0; j<columns.length; j++) {
+                            if(userview[i].trim().toLowerCase() == columns[j].toString().trim().toLowerCase()) {
+                                exists = true;
+                            }
+                        }
+                        if(exists) {
+                            _dataView.push({key: userview[i] , value: exists});
+                        }
                     }
-                }
-                if(!exists) {
-                    this._dataView.push({key: res[i] , value: true});
-                }
+                    for(let i=0; i<columns.length; i++) {
+                        let exists: boolean = false;
+                        for(let j=0; j<_dataView.length; j++) {
+                            if(_dataView[j].key.trim().toLowerCase() == columns[i].toString().trim().toLowerCase()) {
+                                exists = true;
+                            }
+                        }
+                        if(!exists)
+                            _dataView.push({key: columns[i] , value: exists});
+                    }
+                    // reverse logic, every selected item will be displayed by default.
+                    for(let i=0; i<_dataView.length; i++) {
+                        _dataView[i].value = !_dataView[i].value;
+                    }
+                    this.dataView.next(_dataView);
+                })
             }
-            this.dataView.next(this._dataView);
-        });
+        })
+    }
+
+    updateDataView(newDataview : Array<any>) {
+        this.dataView.next(newDataview);
+        this._authService.user.subscribe(user => {
+            console.log(user.scope)
+            let params = this.composeQuery({username : user.user_name});
+            let choosenArray = [];
+            for(var i=0; i<newDataview.length; i++) {
+                if(newDataview[i].value == true)
+                    choosenArray.push(newDataview[i].key)
+            }
+            console.log(choosenArray);
+            // TODO
+            this._http.post(this.appUrl + "/dataview/userview", choosenArray, { search: params })
+                        .toPromise()
+                        .then(data => console.log(data), err=> console.log(err));
+            if(user.scope.indexOf('uaa.admin') > -1) {
+                this._http.post(this.appUrl + "/dataview/defaultview", choosenArray, { search: params })
+                            .toPromise()
+                            .then(data => console.log(data), err=> console.log(err));
+            }
+        })
     }
 
     createMaterial(material){
@@ -120,7 +196,6 @@ export class MaterialService{
             })
             .subscribe(data => {
                 this.addData(data);
-                this.data.next(this._data);
             });
         }
     }
