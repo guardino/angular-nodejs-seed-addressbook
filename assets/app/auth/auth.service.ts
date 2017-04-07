@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
 import { Http, URLSearchParams, Headers, Response } from '@angular/http';
-import { BehaviorSubject } from 'rxjs/BehaviorSubject';
+import { BehaviorSubject, ReplaySubject } from 'rxjs';
 import { Cookie } from 'ng2-cookies/ng2-cookies';
 import { Observable } from 'rxjs';
 import 'rxjs';
@@ -17,12 +17,11 @@ export class AuthService {
   private client_secret = process.env.client_secret;
   private _user : User;
   private _token : string = '';
-
   
   user = new BehaviorSubject<User>(this._user);
   token = new BehaviorSubject<string>(this._token);
   isAuthenticated = new BehaviorSubject<boolean>(false);
-  sid = new BehaviorSubject<string>('');
+  sid = new BehaviorSubject<string>(null);
 
   constructor(private _http: Http, private _router: Router) { }
 
@@ -33,10 +32,11 @@ export class AuthService {
   }
 
   getToken() : Observable<Response> {
-    return this.sid.asObservable().flatMap(sid => {
-        return this._http.get(this.app_url + '/signin/token?sid=' + sid)
-              .map(res => res.json().token)
-    })
+    return this.sid
+              .flatMap(sid => {
+                  return this._http.get(this.app_url + '/signin/token?sid=' + sid)
+                        .map(res => res.json().token)
+              })
   }
 
   login() : void {

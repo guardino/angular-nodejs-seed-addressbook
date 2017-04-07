@@ -97,11 +97,16 @@ export class MaterialService{
             let _dataView = [];
             let params = this.composeQuery({username : user.user_name});
             if(user.scope.indexOf('uaa.admin') > -1) {
-                this._http.get(this.appUrl + "/dataView/userview", { search: params })
-                            .map(res => res.json().dataview)
-                            .subscribe(userview => {
-                                let columns = this.columns.getValue();
-                                for(let i=0; i<userview.length; i++) {
+                Observable.forkJoin([
+                    this._http.get(this.appUrl + "/dataView/defaultview").map(res => res.json().dataview),
+                    this._http.get(this.appUrl + "/dataView/userview", { search: params }).map(res => res.json().dataview)
+                ]).subscribe(data => {
+                    let defaultview = data[0];
+                    let userview = data[1];
+                    let columns = this.columns.getValue();
+                    // use defaultview if userview is not been defined.
+                    userview = userview.length == 0? defaultview : userview;
+                    for(let i=0; i<userview.length; i++) {
                                     let exists: boolean = false;
                                     for(let j=0; j<columns.length; j++) {
                                         if(userview[i].trim().toLowerCase() == columns[j].toString().trim().toLowerCase()) {
@@ -123,7 +128,7 @@ export class MaterialService{
                                         _dataView.push({key: columns[i] , value: exists});
                                 }
                                 this.dataView.next(_dataView);
-                            })
+                })
             } 
             if(user.scope.indexOf('uaa.admin') == -1 && user.scope.indexOf('uaa.user') > -1){
                 Observable.forkJoin([

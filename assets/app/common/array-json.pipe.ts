@@ -4,7 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
 export class ArrayJsonPipe implements PipeTransform {
   transform(value) : any {
     let map = new Object();
-    if(value.length === 'undefined') {
+    if(!value || value.length === 'undefined') {
       return;
     }
     for(let i=0; i<value.length; i++) {
