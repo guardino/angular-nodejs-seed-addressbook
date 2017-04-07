@@ -14,6 +14,7 @@ export class MaterialsEventService {
     data = new BehaviorSubject<Array<Object>>(this._data);
     search = new BehaviorSubject<Array<Object>>(this._search);
     sidebarIndex = new BehaviorSubject<String>(this._index);
+    displayOtherDropdownItems = new BehaviorSubject<boolean>(true);
 
     updateData(data: Array<Object>) {
         this._data = data;

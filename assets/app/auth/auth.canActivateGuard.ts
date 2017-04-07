@@ -20,7 +20,7 @@ export class CanActivateViaOAuthGuard implements CanActivate {
     if(sid.length > 0) {
         this._authService.sid.next(sid);
     }
-    return this._authService.checkToken()
+    return this._authService.checkToken(sid)
                .map(res =>{
                    console.log(res)
                   let resJson = res.json();

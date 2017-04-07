@@ -32,11 +32,15 @@ export class AuthService {
   }
 
   getToken() : Observable<Response> {
-    return this.sid
-              .flatMap(sid => {
+    return this.sid.flatMap(sid => {
                   return this._http.get(this.app_url + '/signin/token?sid=' + sid)
                         .map(res => res.json().token)
               })
+  }
+
+  getTokenFromProvidedSid(sid : string) : Observable<Response> {
+    return this._http.get(this.app_url + '/signin/token?sid=' + sid)
+                      .map(res => res.json())
   }
 
   login() : void {
@@ -48,10 +52,16 @@ export class AuthService {
     window.location.href = this.app_url + '/logout';
   }
 
-  checkToken() : Observable<Response> {
+  checkToken(sid : string) : Observable<Response> {
     return this.getToken().flatMap(token => {
-      return this._http.get(this.app_url + '/isauthenticated?token=' + token)
-                        .catch(err => Observable.throw(err.json().error || 'Unknown error'));
-    })
+              if(token == null || token.toString().length == 0) {
+                return this.getTokenFromProvidedSid(sid).flatMap(token => {
+                  return this._http.get(this.app_url + '/isauthenticated?token=' + token)
+                                .catch(err => Observable.throw(err.json().error || 'Unknown error'));
+                })
+              }
+              return this._http.get(this.app_url + '/isauthenticated?token=' + token)
+                                .catch(err => Observable.throw(err.json().error || 'Unknown error'));
+            })
   }
 }

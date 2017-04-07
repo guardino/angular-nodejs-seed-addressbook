@@ -7,6 +7,7 @@ import { MaterialsEventService } from '../../materials.event.service';
 @Component({
     selector: 'my-search-box',
     template:`
+        <button type="button" (click)="onClick()">Click</button>
         <input 
             #search
             id="search"
@@ -62,6 +63,10 @@ export class SearchBoxComponent implements OnInit, AfterViewInit {
 
     onFocus() : void {
         this._materialService.getDataByName(this.targetSearch);
+    }
+
+    onClick() : void {
+        this._materialsEventService.displayOtherDropdownItems.next(!this._materialsEventService.displayOtherDropdownItems.getValue())
     }
 
     onBlur() : void {
