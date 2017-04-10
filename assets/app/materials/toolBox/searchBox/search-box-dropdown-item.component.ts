@@ -27,6 +27,7 @@ import { MaterialService } from '../../materials.service';
                     style="flex:5"
                     *ngIf="
                         one.value 
+                        && one.key != majorData.key
                         && (displayOtherDropdownItems | async)
                         && one.value.toUpperCase().indexOf(t.toUpperCase())>-1 
                         && t!='' 
@@ -37,6 +38,7 @@ import { MaterialService } from '../../materials.service';
                     style="flex:7"
                     *ngIf="
                         one.value 
+                        && one.key != majorData.key
                         && (displayOtherDropdownItems | async)
                         && one.value.toUpperCase().indexOf(t.toUpperCase())>-1 
                         && t!='' 
