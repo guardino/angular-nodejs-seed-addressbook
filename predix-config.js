@@ -46,8 +46,8 @@ if(node_env === 'development') {
 	var vcapsApplication = JSON.parse(process.env.VCAP_APPLICATION);
 		settings.appURL = 'https://' + vcapsApplication.uris[0];
 		settings.callbackURL = settings.appURL + '/signin/callback';
-		settings.clientSecret = process.env.clientSecret;
-		settings.clientId = process.env.clientId;
+		settings.clientSecret = atob(process.env.clientSecret);
+		settings.clientId = atob(process.env.clientId);
 }
 console.log('config settings: ' + JSON.stringify(settings));
 

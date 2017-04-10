@@ -13,8 +13,8 @@ export class AuthService {
 
   private auth_url = process.env.uaaUrl;
   private app_url = process.env.appUrl;
-  private client_id = process.env.client_id;
-  private client_secret = process.env.client_secret;
+  private client_id = atob(process.env.client_id);
+  private client_secret = atob(process.env.client_secret);
   private _user : User;
   private _token : string = '';
   
