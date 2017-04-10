@@ -57,6 +57,7 @@ export class AddNewComponent implements OnInit {
         let target: HTMLInputElement = <HTMLInputElement> eventObj.target;
         let files: FileList = target.files;
         this.data = files[0];
+        this.uploaded = false;
         this.dataName = this.data.name;
         this.fileIsValid = this.fileValidation();
     }
@@ -75,8 +76,8 @@ export class AddNewComponent implements OnInit {
         return true;
     }
 
-
     onAdd(e) {
+        this.uploaded = false;
         this._materialService.createMaterial(e.data);
         this.useless.emit({clicked: e.submitted});
     }

@@ -7,7 +7,7 @@ import { MaterialService } from '../../materials.service';
     selector: 'my-search-box-dropdown-item',
     template: `
         <a class="my-search-group" *ngFor="let one of item" (click)="onClick(item)">
-            <div *ngFor="let t of targetList" class="input-group my-search-list">
+            <div class="input-group my-search-list">
                 <div 
                     class="input-group-addon my-search-list-item" 
                     style="flex:5"

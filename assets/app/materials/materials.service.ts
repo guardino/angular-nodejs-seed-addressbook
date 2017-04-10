@@ -62,7 +62,6 @@ export class MaterialService{
         .subscribe(data => {
             this.getDataView();
             this.columns.next(data);
-            this.columns.complete();
         });
     }
 
