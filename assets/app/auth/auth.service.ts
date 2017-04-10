@@ -54,7 +54,10 @@ export class AuthService {
 
   checkToken(sid : string) : Observable<Response> {
     return this.getToken().flatMap(token => {
-              if(token == null || token.toString().length == 0) {
+              if(!sid) {
+                this.login();
+              }
+              if((typeof token === "undefined" || token == null || token.toString().length == 0) && sid) {
                 return this.getTokenFromProvidedSid(sid).flatMap(token => {
                   return this._http.get(this.app_url + '/isauthenticated?token=' + token)
                                 .catch(err => Observable.throw(err.json().error || 'Unknown error'));

@@ -137,6 +137,7 @@ export class MaterialService{
                 ]).subscribe(data => {
                     let columns = data[0];
                     let userview = data[1];
+                    // select allowed data view
                     for(let i=0; i<userview.length; i++) {
                         let exists: boolean = false;
                         for(let j=0; j<columns.length; j++) {
@@ -159,8 +160,10 @@ export class MaterialService{
                             _dataView.push({key: columns[i] , value: exists});
                     }
                     // reverse logic, every selected item will be displayed by default.
-                    for(let i=0; i<_dataView.length; i++) {
-                        _dataView[i].value = !_dataView[i].value;
+                    if(userview.length == 0) {
+                        for(let i=0; i<_dataView.length; i++) {
+                            _dataView[i].value = !_dataView[i].value;
+                        }
                     }
                     this.dataView.next(_dataView);
                 })

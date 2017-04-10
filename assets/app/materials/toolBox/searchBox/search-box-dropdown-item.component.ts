@@ -13,23 +13,35 @@ import { MaterialService } from '../../materials.service';
                     style="flex:5"
                     [class.majorData]="one.key == majorData.key"
                     *ngIf="
-                        one.key == majorData.key
-                        || one.value 
-                        && (displayOtherDropdownItems | async)
-                        && one.value.toUpperCase().indexOf(t.toUpperCase())>-1 
-                        && t!='' 
-                        && one.key.toUpperCase()!='ID'"> {{one.key}}</div>
+                        one.key.trim().toLowerCase() == majorData.key.trim().toLowerCase()"> {{one.key}}</div>
                 <div 
                     class="form-control my-search-list-item" 
                     style="flex:7"
                     [class.majorData]="one.key == majorData.key"
                     *ngIf="
-                        one.key == majorData.key
-                        || one.value 
+                        one.key.trim().toLowerCase() == majorData.key.trim().toLowerCase()"> {{one.value}}</div>
+            </div>
+            <div *ngFor="let t of targetList" class="input-group my-search-list">
+                <div 
+                    class="input-group-addon my-search-list-item" 
+                    style="flex:5"
+                    *ngIf="
+                        one.value 
                         && (displayOtherDropdownItems | async)
                         && one.value.toUpperCase().indexOf(t.toUpperCase())>-1 
                         && t!='' 
-                        && one.key.toUpperCase()!='ID'"> {{one.value}}</div>
+                        && one.key.toUpperCase()!='ID'
+                        && one.key.trim().toLowerCase() != majorData.key.trim().toLowerCase()"> {{one.key}}</div>
+                <div 
+                    class="form-control my-search-list-item" 
+                    style="flex:7"
+                    *ngIf="
+                        one.value 
+                        && (displayOtherDropdownItems | async)
+                        && one.value.toUpperCase().indexOf(t.toUpperCase())>-1 
+                        && t!='' 
+                        && one.key.toUpperCase()!='ID'
+                        && one.key.trim().toLowerCase() != majorData.key.trim().toLowerCase()"> {{one.value}}</div>
             </div>
         </a>
         `,
@@ -70,11 +82,11 @@ export class SearchBoxDropdownItemComponent implements OnChanges, OnInit {
 
     getMajorData() {
         let dataview = this._materialService.dataView.getValue();
-        if((<any>dataview[0]).key) {
-            this.majorData = dataview[1];
-        } else {
-            this.majorData = dataview[0];
-        }
+        for(let i=0; i<dataview.length; i++) {
+            if((<any>dataview[i]).key != 'id' && (<any>dataview[i]).value == true) {
+                this.majorData = dataview[i];
+                break;
+            }
+        } 
     }
-
 }

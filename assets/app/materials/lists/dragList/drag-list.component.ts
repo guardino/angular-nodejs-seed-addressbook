@@ -10,7 +10,9 @@ import { MaterialService } from '../../materials.service'
             <div style="display: flex; 
                  justify-content: space-between;">
                  <div style="padding-right: 10px; color: aliceblue; min-width: 100px; flex-grow: 1;">Invisible: </div>
-                 <div style="padding-left: 10px; color: aliceblue; min-width: 100px; flex-grow: 1;">Selected: </div>
+                 <div style="padding-left: 10px; color: aliceblue; min-width: 100px; flex-grow: 1;">
+                    Visible:
+                </div>
             </div>
             <div style="display: flex; 
                  justify-content: space-between;">
@@ -29,14 +31,19 @@ import { MaterialService } from '../../materials.service'
                     style="min-width: 100px; padding-left: 10px; flex-grow: 1;">
                     <li 
                         *ngFor="let item of selectedBag" 
-                        class="list-group-item" 
+                        class="list-group-item selected-item" 
                         [innerHtml]="item.key|uppercase"></li>
                 </ul>
             </div>   
             <br>
             <button type="button" class="btn btn-primary pull-right" (click)="confirm()">{{ button }}</button>
     `,
-    providers: [DragulaService]
+    providers: [DragulaService],
+    styles: [`
+        .selected-item:first-child {
+            font-weight: 900;
+        }
+    `]
 })
 export class DragListComponent implements OnInit {
 
@@ -60,7 +67,6 @@ export class DragListComponent implements OnInit {
         let dataView = []
         this._materialService.dataView.subscribe(res => {
             dataView = res;
-                console.log(dataView)
             for(let i=0; i<dataView.length; i++) {
                 if(dataView[i].key != "id"){ // remove id option
                     if(dataView[i].value == true) {
