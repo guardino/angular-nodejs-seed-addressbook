@@ -6,7 +6,7 @@ import { AuthService } from './auth.service';
     selector: 'my-login',
     template: `
         <div class="container">
-            <button type="button" class="btn btn-outline-primary btn-lg btn-block" (click)="onGeSsoClick()">Login via GE SSO</button>
+            <button type="button" class="btn btn-outline-primary btn-lg btn-block" (click)="onGeSsoClick()">Login</button>
         </div>
     `
 })
